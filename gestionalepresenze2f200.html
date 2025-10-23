@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>2F2000 - Gestionale Presenze Cloud SICURO</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root{
+            --bg:#071024;
+            --card:#0b1626;
+            --glass: rgba(255,255,255,0.03);
+            --accent:#1e90ff;
+            --gold:#ffd27a;
+            color-scheme: dark;
+        }
+        *{box-sizing:border-box;font-family:Inter, "Segoe UI", Arial, sans-serif}
+        body{margin:0;background:linear-gradient(180deg,#001133,#071024);color:#e6f0ff;min-height:100vh}
+        .cloud-banner{background:linear-gradient(90deg,#4caf50,#8bc34a);color:white;padding:8px;text-align:center;font-weight:700}
+        header{display:flex;align-items:center;padding:12px 18px;border-bottom:1px solid rgba(255,255,255,0.04)}
+        .logo{display:flex;gap:12px;align-items:center}
+        .brand{font-weight:800;font-size:18px}
+        .slogan{font-size:11px;color:var(--gold);font-style:italic;margin-top:2px}
+        main{display:grid;grid-template-columns:300px 1fr;gap:18px;padding:18px}
+        .sidebar{background:var(--card);padding:12px;border-radius:12px;height:fit-content;position:sticky;top:20px}
+        .login-inp{width:100%;padding:8px;margin-top:6px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+        .btn{padding:8px 12px;border-radius:8px;border:none;cursor:pointer;background:linear-gradient(90deg,#ff7043,#ffd27a);font-weight:600}
+        .btn.secondary{background:linear-gradient(90deg,#9e9e9e,#bdbdbd)}
+        .btn.danger{background:linear-gradient(90deg,#ff4444,#ff6666)}
+        .btn.success{background:linear-gradient(90deg,#4caf50,#8bc34a)}
+        .menu-btn{display:block;padding:10px;border-radius:8px;background:var(--glass);margin-top:8px;text-align:left;border:1px solid rgba(255,255,255,0.02);width:100%;color:inherit;cursor:pointer}
+        .menu-btn:hover{background:rgba(255,255,255,0.06)}
+        .quicknotes{width:100%;height:90px;border-radius:8px;padding:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:inherit}
+        .content{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:12px;border-radius:12px;min-height:70vh}
+        .small{font-size:13px;color:#cfe8ff}
+        table{width:100%;border-collapse:collapse;margin-top:8px}
+        th,td{padding:6px;border:1px solid rgba(255,255,255,0.04);font-size:14px}
+        .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:8px}
+        .cell{background:var(--card);padding:8px;border-radius:8px;min-height:80px;position:relative;cursor:pointer;transition:background 0.15s}
+        .cell:hover{background:rgba(255,255,255,0.04)}
+        .daynum{font-weight:700;font-size:13px}
+        .status-pill{position:absolute;right:8px;top:8px;padding:4px 6px;border-radius:6px;font-size:12px}
+        .P{background:rgba(0,200,100,0.12);color:#bfffcf}
+        .A{background:rgba(255,80,80,0.12);color:#ffd0d0}
+        .M{background:rgba(255,200,0,0.09);color:#fff5cc}
+        .D{background:rgba(150,150,150,0.08);color:#ddd}
+        .modal{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(2,6,12,0.8);display:none;align-items:center;justify-content:center;z-index:9999}
+        .modal.open{display:flex}
+        .panel{background:#071627;padding:16px;border-radius:10px;min-width:320px;color:#e6f0ff;border:1px solid rgba(255,255,255,0.08)}
+        .alert{background:linear-gradient(90deg,#ff7043,#ffca28);padding:8px;border-radius:8px;color:#081018;margin-bottom:10px;font-weight:700}
+        footer{padding:12px;text-align:center;color:#9fbff0;border-top:1px solid rgba(255,255,255,0.04)}
+        .badge{display:inline-block;padding:4px 8px;border-radius:10px;background:rgba(255,255,255,0.03);color:var(--gold);font-weight:700}
+        .saldo-positivo{color:#4caf50;font-weight:bold}
+        .saldo-negativo{color:#ff4444;font-weight:bold}
+        @media (max-width:900px){main{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <div class="cloud-banner">☁️ GESTIONALE CLOUD 2F2000 - SISTEMA ANTI-PERDITA DATI ATTIVO</div>
+
+    <header>
+        <div class="logo">
+            <div style="width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,#0d47a1,#2196f3);display:flex;align-items:center;justify-content:center;font-weight:800">2F</div>
+            <div>
+                <div class="brand">2F2000 - Gestionale Presenze Cloud</div>
+                <div class="slogan">2F2000 - la scelta costruttiva!</div>
+            </div>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+            <button class="btn" onclick="openCronologia()" style="background:linear-gradient(90deg,#9c27b0,#673ab7)">📋 Cronologia</button>
+            <div id="now" class="small"></div>
+        </div>
+    </header>
+
+    <main>
+        <aside class="sidebar">
+            <div style="margin-bottom:10px">
+                <strong>Accesso Cloud</strong>
+                <div id="loginArea" style="margin-top:8px">
+                    <input id="username" class="login-inp" placeholder="username" value="2F2000" />
+                    <input id="password" class="login-inp" type="password" placeholder="password" value="220785" />
+                    <div style="display:flex;gap:8px;margin-top:8px">
+                        <button id="btnLogin" class="btn">Login</button>
+                        <button id="btnLogout" class="btn secondary" style="display:none">Esci</button>
+                    </div>
+                    <div id="loginMsg" class="small" style="margin-top:6px"></div>
+                </div>
+            </div>
+
+            <div style="margin-top:8px">
+                <div class="small">Ricerca dipendente</div>
+                <input id="searchEmp" class="login-inp" placeholder="Cerca..." />
+            </div>
+
+            <div style="margin-top:12px">
+                <div class="small">Note rapide</div>
+                <textarea id="quickNotes" class="quicknotes"></textarea>
+            </div>
+
+            <div style="margin-top:12px">
+                <button class="menu-btn" data-section="home">🏠 Home</button>
+                <button class="menu-btn" data-section="dipendenti">👥 Dipendenti</button>
+                <button class="menu-btn" data-section="presenze">📅 Presenze (Calendario)</button>
+                <button class="menu-btn" data-section="stipendi">💰 Stipendi & Report</button>
+                <button class="menu-btn" data-section="acconti">💳 Acconti</button>
+                <button class="menu-btn" data-section="files">📎 Buste Paga</button>
+                <button class="menu-btn" data-section="backup" style="background:linear-gradient(90deg,#4caf50,#8bc34a)">💾 Backup Sicuro</button>
+                <button class="menu-btn" data-section="istruzioni" style="background:linear-gradient(90deg,#ff9800,#ff5722)">🚨 Istruzioni Backup</button>
+            </div>
+
+            <div style="margin-top:12px" class="small">
+                <div>Ultimo salvataggio: <span id="lastSave">--</span></div>
+                <div id="storageInfo">Memoria: --</div>
+                <div id="saveCounter" style="color:var(--gold);margin-top:6px">Salvataggi: 0</div>
+            </div>
+        </aside>
+
+        <section class="content" id="app" aria-hidden="true">
+            <div id="alerts"></div>
+            <div id="page"></div>
+        </section>
+    </main>
+
+    <footer>
+        2F2000 SRL • Gestionale Cloud Anti-Perdita • <span id="dataSize">Dati: calcolo...</span> • <span id="versionInfo">v5.0 Sicuro</span>
+    </footer>
+
+    <!-- Modal Edit Day -->
+    <div id="modalDay" class="modal">
+        <div class="panel">
+            <h3>Modifica Giorno</h3>
+            <div id="modalInfo"></div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+                <select id="modalStatus">
+                    <option value="P">Presente</option>
+                    <option value="A">Assente</option>
+                    <option value="M">Mezza giornata</option>
+                    <option value="D">Domenica</option>
+                </select>
+                <input id="modalNote" placeholder="Note..." />
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+                <button class="btn" id="saveDayBtn">Salva</button>
+                <button class="btn secondary" id="closeDayBtn">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Employee -->
+    <div id="modalEmp" class="modal">
+        <div class="panel">
+            <h3 id="empModalTitle">Modifica Dipendente</h3>
+            <div style="display:flex;flex-direction:column;gap:8px">
+                <input id="e_nome" placeholder="Nome" />
+                <input id="e_cognome" placeholder="Cognome" />
+                <input id="e_qualifica" placeholder="Qualifica" />
+                <label class="small">Assunzione <input id="e_assunzione" type="date" /></label>
+                <label class="small">Fine contratto <input id="e_fine" type="date" /></label>
+                <input id="e_paga" type="number" placeholder="Paga giornaliera" />
+                <textarea id="e_notes" placeholder="Note generali"></textarea>
+                <div style="display:flex;gap:8px;justify-content:flex-end">
+                    <button class="btn" id="saveEmpBtn">Salva</button>
+                    <button class="btn secondary" id="delEmpBtn">Elimina</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Acconto -->
+    <div id="modalAcconto" class="modal">
+    <div class="panel">
+        <h3>Nuovo Acconto</h3>
+        <div style="display:flex;flex-direction:column;gap:8px">
+            <select id="ac_emp" class="login-inp">
+                <option value="">Seleziona dipendente</option>
+            </select>
+            <input id="ac_data" type="date" class="login-inp" />
+            <input id="ac_importo" type="number" placeholder="Importo" class="login-inp" />
+            
+            <!-- AGGIUNGI QUESTI DUE CAMPI PER IL MESE DI RIFERIMENTO -->
+            <div style="display:flex;gap:8px">
+                <select id="ac_mese_riferimento" class="login-inp" style="flex:1">
+                    <option value="0">Gennaio</option>
+                    <option value="1">Febbraio</option>
+                    <option value="2">Marzo</option>
+                    <option value="3">Aprile</option>
+                    <option value="4">Maggio</option>
+                    <option value="5">Giugno</option>
+                    <option value="6">Luglio</option>
+                    <option value="7">Agosto</option>
+                    <option value="8">Settembre</option>
+                    <option value="9">Ottobre</option>
+                    <option value="10">Novembre</option>
+                    <option value="11">Dicembre</option>
+                </select>
+                <select id="ac_anno_riferimento" class="login-inp" style="flex:1">
+    <option value="2023">2023</option>
+    <option value="2024">2024</option>
+    <option value="2025">2025</option>
+    <option value="2026">2026</option>
+</select>
+            </div>
+            
+            <select id="ac_tipo" class="login-inp">
+                <option value="acconto">Acconto Normale</option>
+                <option value="scalato">Acconto Scalato</option>
+            </select>
+            <select id="ac_modalita" class="login-inp">
+                <option value="Contanti">Contanti</option>
+                <option value="Bonifico">Bonifico</option>
+                <option value="Assegno">Assegno</option>
+            </select>
+            <textarea id="ac_note" placeholder="Note" class="login-inp"></textarea>
+            <div style="display:flex;gap:8px;justify-content:flex-end">
+                <button class="btn" id="saveAcBtn">Salva</button>
+                <button class="btn secondary" id="closeAcBtn">Chiudi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Modal Cronologia -->
+    <div id="modalCronologia" class="modal">
+        <div class="panel" style="min-width:600px;max-height:80vh;overflow-y:auto">
+            <h3>📋 Cronologia Operazioni</h3>
+            <div style="margin-bottom:12px">
+                <button class="btn secondary" onclick="esportaCronologiaPDF()">Esporta PDF</button>
+                <button class="btn danger" onclick="pulisciCronologia()" style="margin-left:8px">Pulisci Cronologia</button>
+            </div>
+            <div id="cronologiaList" style="margin-top:12px">
+                <!-- La cronologia verrà popolata qui -->
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+                <button class="btn" onclick="closeModal('modalCronologia')">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Backup -->
+    <div id="modalBackup" class="modal">
+        <div class="panel" style="min-width:480px">
+            <h3>💾 SISTEMA BACKUP ANTI-PERDITA</h3>
+            <div style="margin-top:12px">
+                <button class="btn" onclick="exportBackup()" style="width:100%;margin-bottom:8px">Scarica File Backup</button>
+                <button class="btn" onclick="createAutoDownloadBackup()" style="width:100%;background:linear-gradient(90deg,#4caf50,#8bc34a)">Backup Auto-Download</button>
+            </div>
+            <div style="margin-top:12px">
+                <input type="file" id="backupFile" accept=".json" style="width:100%;padding:6px" />
+                <button class="btn" onclick="importBackup()" style="width:100%;background:linear-gradient(90deg,#2196f3,#03a9f4);margin-top:8px">Carica e Ripristina</button>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+                <button class="btn" onclick="document.getElementById('modalBackup').classList.remove('open')">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+/* ================= GLOBAL ================= */
+const APP_VERSION = '5.0-antiperdita';
+const STORAGE_KEYS = { main:'2f2000_secure_main', backup:'2f2000_secure_backup', emergency:'2f2000_secure_emergency' };
+const STATE_TEMPLATE = {
+    version: APP_VERSION,
+    lastBackup: null,
+    lastSync: new Date().toISOString(),
+    users: [{username:'2F2000', password:'220785'}],
+    employees: [],
+    presenze: {},          // structure: presenze[empId] = { 'YYYY-MM-DD': { status:'P', note:'' } }
+    acconti: [],
+    quickNotes: '',
+    reports: [],
+    bustePaga: [],
+    cronologia: []
+};
+let state = JSON.parse(JSON.stringify(STATE_TEMPLATE));
+let currentModalDate = null;
+let currentEditingEmpId = null;
+let selectedEmpForCalendar = null;
+let autosaveTimer = null;
+
+/* =============== CRONOLOGIA OPERAZIONI =============== */
+function aggiungiLogCronologia(azione, dettagli = '') {
+    if (!state.cronologia) state.cronologia = [];
+    
+    const logEntry = {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        azione: azione,
+        dettagli: dettagli,
+        user: sessionStorage.getItem('2f2000_user') || 'System'
+    };
+    
+    state.cronologia.unshift(logEntry); // Aggiungi in testa
+    // Mantieni solo ultimi 1000 record
+    if (state.cronologia.length > 1000) {
+        state.cronologia = state.cronologia.slice(0, 1000);
+    }
+    saveState();
+}
+
+function openCronologia() {
+    document.getElementById('modalCronologia').classList.add('open');
+    renderCronologia();
+}
+
+function renderCronologia() {
+    const container = document.getElementById('cronologiaList');
+    if (!state.cronologia || state.cronologia.length === 0) {
+        container.innerHTML = '<div class="small">Nessuna operazione registrata</div>';
+        return;
+    }
+    
+    container.innerHTML = state.cronologia.map(log => `
+        <div style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px">
+            <div style="display:flex;justify-content:between;align-items:center">
+                <strong style="color:var(--gold)">${escapeHtml(log.azione)}</strong>
+                <span class="small">${new Date(log.timestamp).toLocaleString('it-IT')}</span>
+            </div>
+            <div class="small" style="margin-top:4px">${escapeHtml(log.dettagli || '')}</div>
+            <div class="small" style="color:#888">Utente: ${escapeHtml(log.user)}</div>
+        </div>
+    `).join('');
+}
+
+function esportaCronologiaPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    doc.setFontSize(16);
+    doc.text('CRONOLOGIA OPERAZIONI - 2F2000', 20, 20);
+    doc.setFontSize(10);
+    doc.text(`Generato il ${new Date().toLocaleDateString('it-IT')}`, 20, 28);
+    
+    let y = 40;
+    state.cronologia.forEach((log, index) => {
+        if (y > 270) {
+            doc.addPage();
+            y = 20;
+        }
+        
+        doc.setFontSize(9);
+        doc.text(`${new Date(log.timestamp).toLocaleString('it-IT')} - ${log.azione}`, 20, y);
+        
+        if (log.dettagli) {
+            doc.setFontSize(8);
+            const lines = doc.splitTextToSize(log.dettagli, 170);
+            doc.text(lines, 25, y + 4);
+            y += 4 + (lines.length * 3);
+        }
+        
+        doc.setFontSize(7);
+        doc.text(`Utente: ${log.user}`, 20, y + 8);
+        
+        y += 15;
+    });
+    
+    doc.save(`cronologia_2f2000_${new Date().toISOString().split('T')[0]}.pdf`);
+    showAlert('Cronologia esportata in PDF!', 'alert');
+}
+
+function pulisciCronologia() {
+    if (confirm('Vuoi davvero cancellare tutta la cronologia?')) {
+        state.cronologia = [];
+        saveState();
+        renderCronologia();
+        showAlert('Cronologia pulita', 'alert');
+    }
+}
+
+function calcolaTotaleStipendiOggi() {
+    const now = new Date();
+    const mese = now.getMonth();
+    const anno = now.getFullYear();
+    
+    let totaleNetto = 0;
+    
+    state.employees.forEach(emp => {
+        const giorniLavorati = countPresenceDaysForEmpInMonth(emp.id, mese, anno);
+        const pagaGiornaliera = parseFloat(emp.paga || 0);
+        const stipendioLordo = giorniLavorati * pagaGiornaliera;
+        const accontiMese = calcolaAccontiMese(emp.id, mese, anno);
+        const saldoNetto = stipendioLordo - accontiMese;
+        
+        totaleNetto += saldoNetto;
+    });
+    
+    const elemento = document.getElementById('totaleStipendiOggi');
+    if (elemento) {
+        elemento.textContent = `${totaleNetto.toFixed(2)}€`;
+    }
+    
+    return totaleNetto;
+}
+
+/* =============== INIT =============== */
+document.addEventListener('DOMContentLoaded', () => {
+    loadState();
+    setupEventListeners();
+    updateClock();
+    setInterval(updateClock,1000);
+    updateUI();
+    // if logged in, show app
+    if (sessionStorage.getItem('2f2000_user')) {
+        unlockApp();
+    } else {
+        lockApp();
+    }
+    // show home by default in page area (even locked)
+    renderHome();
+});
+
+/* =============== STATE LOAD/SAVE =============== */
+function loadState(){
+    try {
+        const keysToTry = [STORAGE_KEYS.main, STORAGE_KEYS.backup, STORAGE_KEYS.emergency];
+        for (let key of keysToTry){
+            const s = localStorage.getItem(key);
+            if (s){
+                const parsed = JSON.parse(s);
+                if (parsed && parsed.employees !== undefined){
+                    state = parsed;
+                    console.log('Dati caricati da', key);
+                    return;
+                }
+            }
+        }
+        console.log('Nuovo stato inizializzato');
+    } catch(e){
+        console.error('Errore caricamento stato', e);
+    }
+}
+
+function saveState(){
+    if (autosaveTimer) clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(() => {
+        try {
+            state.lastSync = new Date().toISOString();
+            localStorage.setItem(STORAGE_KEYS.main, JSON.stringify(state));
+            const count = parseInt(localStorage.getItem('2f2000_save_count')||'0') + 1;
+            localStorage.setItem('2f2000_save_count', String(count));
+            if (count % 10 === 0) {
+                localStorage.setItem(STORAGE_KEYS.backup, JSON.stringify(state));
+                state.lastBackup = new Date().toISOString();
+            }
+            updateUI();
+            console.log('Salvato');
+        } catch(e){
+            console.error('Errore salvataggio', e);
+        }
+    }, 350);
+}
+
+/* =============== UI UTILS =============== */
+function updateClock(){ document.getElementById('now').textContent = new Date().toLocaleString('it-IT'); }
+function updateUI(){
+    document.getElementById('lastSave').textContent = new Date().toLocaleString('it-IT');
+    document.getElementById('quickNotes').value = state.quickNotes || '';
+    document.getElementById('saveCounter').textContent = `Salvataggi: ${localStorage.getItem('2f2000_save_count') || '0'}`;
+    try {
+        const sz = new Blob([JSON.stringify(state)]).size;
+        const kb = (sz/1024).toFixed(1);
+        document.getElementById('storageInfo').innerHTML = `Memoria: <span style="color:#4caf50">${kb} KB</span>`;
+        document.getElementById('dataSize').textContent = `Dati: ${kb} KB`;
+    } catch(e){}
+}
+
+/* =============== EVENTS =============== */
+function setupEventListeners(){
+    // login handlers
+    document.getElementById('btnLogin').addEventListener('click', handleLogin);
+    document.getElementById('btnLogout').addEventListener('click', handleLogout);
+
+    // menu
+    document.querySelectorAll('.menu-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const section = e.currentTarget.getAttribute('data-section');
+            openSection(section);
+        });
+    });
+
+    // quicknotes
+    document.getElementById('quickNotes').addEventListener('input', e => {
+        state.quickNotes = e.target.value;
+        saveState();
+    });
+
+    // search
+    document.getElementById('searchEmp').addEventListener('input', (e) => {
+        const val = e.target.value || '';
+        if (document.querySelector('#page [data-list="employees"]')) renderDipendenti(val);
+        if (document.getElementById('homeSearch')) renderHomeEmpList(val);
+    });
+
+    // modal day buttons
+    document.getElementById('saveDayBtn').addEventListener('click', saveDayFromModal);
+    document.getElementById('closeDayBtn').addEventListener('click', () => closeModal('modalDay'));
+    document.getElementById('modalDay').addEventListener('click',(e)=>{ if (e.target === document.getElementById('modalDay')) closeModal('modalDay'); });
+
+    // modal emp buttons
+    document.getElementById('saveEmpBtn').addEventListener('click', saveEmployee);
+    document.getElementById('delEmpBtn').addEventListener('click', deleteCurrentEmployee);
+    document.getElementById('modalEmp').addEventListener('click', (e)=>{ if (e.target === document.getElementById('modalEmp')) closeModal('modalEmp'); });
+
+    // modal acconto buttons
+    document.getElementById('saveAcBtn').addEventListener('click', saveAcconto);
+    document.getElementById('closeAcBtn').addEventListener('click', () => closeModal('modalAcconto'));
+    document.getElementById('modalAcconto').addEventListener('click', (e) => { 
+        if (e.target === document.getElementById('modalAcconto')) closeModal('modalAcconto'); 
+    });
+
+    // backup modal file input
+    document.getElementById('backupFile').addEventListener('change', ()=>{ /* user will press import */});
+}
+
+/* =============== LOGIN =============== */
+function handleLogin(){
+    const u = document.getElementById('username').value.trim();
+    const p = document.getElementById('password').value;
+    const found = state.users.find(x => x.username === u && x.password === p);
+    if (found){
+        sessionStorage.setItem('2f2000_user', u);
+        unlockApp();
+        document.getElementById('loginMsg').textContent = '';
+    } else {
+        document.getElementById('loginMsg').textContent = 'Credenziali errate';
+    }
+}
+
+function handleLogout(){
+    sessionStorage.removeItem('2f2000_user');
+    lockApp();
+}
+
+function unlockApp(){
+    document.getElementById('app').style.opacity = '1';
+    document.getElementById('app').style.pointerEvents = 'auto';
+    document.getElementById('loginArea').style.display = 'none';
+    document.getElementById('btnLogout').style.display = 'inline-block';
+    openSection('home');
+}
+
+function lockApp(){
+    document.getElementById('app').style.opacity = '0.03';
+    document.getElementById('app').style.pointerEvents = 'none';
+    document.getElementById('loginArea').style.display = 'block';
+    document.getElementById('btnLogout').style.display = 'none';
+    document.getElementById('page').innerHTML = '';
+}
+
+/* =============== NAVIGATION =============== */
+function openSection(section){
+    // if locked, still allow showing instructions/home, but otherwise require login for data pages
+    if (!sessionStorage.getItem('2f2000_user') && ['dipendenti','presenze','stipendi','acconti','files','backup'].includes(section)) {
+        showAlert('Esegui il login per accedere a questa sezione', 'alert');
+        return;
+    }
+    switch(section){
+        case 'home': renderHome(); break;
+        case 'dipendenti': renderDipendenti(); break;
+        case 'presenze': renderPresenze(); break;
+        case 'stipendi': renderStipendi(); break;
+        case 'acconti': renderAcconti(); break;
+        case 'files': renderFiles(); break;
+        case 'backup': document.getElementById('modalBackup').classList.add('open'); break;
+        case 'istruzioni': renderIstruzioni(); break;
+        default: document.getElementById('page').innerHTML = '<div class="alert">Sezione non trovata</div>';
+    }
+}
+
+/* =============== SIMPLE ALERT =============== */
+function showAlert(msg, type='alert'){
+    const a = document.getElementById('alerts');
+    a.innerHTML = `<div class="${type}">${msg}</div>`;
+    setTimeout(()=>a.innerHTML='',3500);
+}
+
+/* =============== HOME =============== */
+function renderHome(){
+    const page = document.getElementById('page');
+    checkExpiries(); // show contract expiry alerts in page alerts area
+    page.innerHTML = `
+        <div style="display:flex;gap:20px">
+            <div style="flex:1">
+                <div style="background:linear-gradient(90deg,#4caf50,#8bc34a);padding:10px;border-radius:8px;margin-bottom:12px"><strong>🏠 BENVENUTO</strong> - 2F2000 Gestionale</div>
+                
+                <!-- TOTALE STIPENDI DATA CORRENTE -->
+                <div style="background:linear-gradient(90deg,#2196f3,#03a9f4);padding:12px;border-radius:8px;margin-bottom:12px">
+                    <h4 style="margin:0;color:white">💰 TOTALE STIPENDI MESE CORRENTE</h4>
+                    <div style="font-size:24px;font-weight:bold;color:white;text-align:center;margin-top:8px" id="totaleStipendiOggi">Calcolo...</div>
+                </div>
+                
+                <h4>Note rapide</h4>
+                <div style="background:var(--glass);padding:12px;border-radius:8px;min-height:100px">${escapeHtml(state.quickNotes || 'Nessuna nota')}</div>
+                <h4 style="margin-top:16px">Cerca dipendenti</h4>
+                <input id="homeSearch" class="login-inp" placeholder="Cerca..." oninput="renderHomeEmpList(this.value)" />
+                <div id="homeEmpList" style="margin-top:8px"></div>
+            </div>
+            <div style="width:300px">
+                <h4>Riepilogo</h4>
+                <div style="background:var(--glass);padding:12px;border-radius:8px">
+                    <div>👥 Dipendenti: <strong>${state.employees.length}</strong></div>
+                    <div style="margin-top:8px">📅 Giorni registrati: <strong>${countTotalPresenceDays()}</strong></div>
+                    <div style="margin-top:8px">💰 Acconti: <strong>${state.acconti.length}</strong></div>
+                    <div style="margin-top:8px">📋 Operazioni: <strong>${state.cronologia ? state.cronologia.length : 0}</strong></div>
+                    <div style="margin-top:8px">🔄 Ultimo salvataggio: <strong>${new Date(state.lastSync||Date.now()).toLocaleString()}</strong></div>
+                </div>
+                <div style="margin-top:12px">
+                    <button class="btn" onclick="openSection('backup')" style="width:100%">FAI BACKUP ORA</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Calcola e mostra totale stipendi
+    calcolaTotaleStipendiOggi();
+    renderHomeEmpList();
+}
+
+function renderHomeEmpList(filter=''){
+    const container = document.getElementById('homeEmpList');
+    if (!container) return;
+    const list = state.employees.filter(emp => `${emp.nome} ${emp.cognome} ${emp.qualifica}`.toLowerCase().includes((filter||'').toLowerCase()));
+    if (list.length===0){ container.innerHTML = '<div class="small">Nessun dipendente trovato</div>'; return; }
+    container.innerHTML = list.map((emp,idx)=>`
+        <div style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;justify-content:space-between;align-items:center">
+            <div>
+                <strong>${escapeHtml(emp.nome)} ${escapeHtml(emp.cognome)}</strong>
+                <div class="small">${escapeHtml(emp.qualifica)} ${emp.fine? '• Scade: ' + formatDate(emp.fine):''}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+                <button class="btn" onclick="selectEmployee(${idx})" style="padding:6px 8px">Apri</button>
+                <button class="btn secondary" onclick="openSection('presenze'); selectedEmpForCalendar = ${emp.id}; renderPresenze();">Presenze</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+/* =============== EMPLOYEES =============== */
+function renderDipendenti(filter=''){
+    const page = document.getElementById('page');
+    page.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3>👥 Gestione Dipendenti</h3>
+            <div>
+                <button class="btn" onclick="openNewEmployee()">➕ Nuovo dipendente</button>
+            </div>
+        </div>
+        <div style="margin-top:12px">
+            <input id="filterEmp" class="login-inp" placeholder="Filtra..." oninput="renderDipendenti(this.value)" />
+            <div data-list="employees" style="margin-top:8px"></div>
+        </div>
+    `;
+    const container = document.querySelector('[data-list="employees"]');
+    const q = (filter||'').toLowerCase();
+    const list = state.employees.filter(emp => `${emp.nome} ${emp.cognome} ${emp.qualifica}`.toLowerCase().includes(q));
+    if (list.length === 0) { container.innerHTML = '<div class="small">Nessun dipendente</div>'; return; }
+    container.innerHTML = list.map((emp,idx)=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid rgba(255,255,255,0.04)">
+            <div>
+                <strong>${escapeHtml(emp.nome)} ${escapeHtml(emp.cognome)}</strong>
+                <div class="small">${escapeHtml(emp.qualifica)} • Paga: ${emp.paga? emp.paga+'€/giorno':'-'}</div>
+                ${emp.fine ? `<div class="small" style="color:#ff9800">Scade: ${formatDate(emp.fine)}</div>` : ''}
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+                <button class="btn" onclick="selectEmployee(${idx})">Modifica</button>
+                <button class="btn secondary" onclick="openSection('presenze'); selectedEmpForCalendar = ${emp.id}; renderPresenze();">Presenze</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function openNewEmployee(){
+    currentEditingEmpId = null;
+    document.getElementById('empModalTitle').textContent = 'Nuovo Dipendente';
+    document.getElementById('e_nome').value = '';
+    document.getElementById('e_cognome').value = '';
+    document.getElementById('e_qualifica').value = '';
+    document.getElementById('e_assunzione').value = '';
+    document.getElementById('e_fine').value = '';
+    document.getElementById('e_paga').value = '';
+    document.getElementById('e_notes').value = '';
+    document.getElementById('modalEmp').classList.add('open');
+}
+
+function selectEmployee(index){
+    const emp = state.employees[index];
+    if (!emp) return showAlert('Dipendente non trovato','alert');
+    currentEditingEmpId = emp.id;
+    document.getElementById('empModalTitle').textContent = 'Modifica Dipendente';
+    document.getElementById('e_nome').value = emp.nome || '';
+    document.getElementById('e_cognome').value = emp.cognome || '';
+    document.getElementById('e_qualifica').value = emp.qualifica || '';
+    document.getElementById('e_assunzione').value = emp.assunzione || '';
+    document.getElementById('e_fine').value = emp.fine || '';
+    document.getElementById('e_paga').value = emp.paga || '';
+    document.getElementById('e_notes').value = emp.notes || '';
+    document.getElementById('modalEmp').classList.add('open');
+}
+
+function saveEmployee(){
+    const nome = document.getElementById('e_nome').value.trim();
+    const cognome = document.getElementById('e_cognome').value.trim();
+    const qualifica = document.getElementById('e_qualifica').value.trim();
+    const assunzione = document.getElementById('e_assunzione').value || '';
+    const fine = document.getElementById('e_fine').value || '';
+    const paga = document.getElementById('e_paga').value || '';
+    const notes = document.getElementById('e_notes').value || '';
+
+    if (!nome || !cognome) return showAlert('Nome e cognome obbligatori','alert');
+
+    if (currentEditingEmpId){
+        // update
+        const idx = state.employees.findIndex(x=>x.id===currentEditingEmpId);
+        if (idx !== -1){
+            state.employees[idx] = {...state.employees[idx], nome, cognome, qualifica, assunzione, fine, paga, notes};
+        }
+    } else {
+        const id = Date.now();
+        state.employees.push({ id, nome, cognome, qualifica, assunzione, fine, paga, notes });
+    }
+    saveState();
+    
+    // AGGIUNGI LOG CRONOLOGIA
+    aggiungiLogCronologia(
+        currentEditingEmpId ? 'Modifica dipendente' : 'Nuovo dipendente', 
+        `${nome} ${cognome} - ${qualifica}`
+    );
+    
+    closeModal('modalEmp');
+    renderDipendenti();
+    renderHome();
+}
+
+function deleteCurrentEmployee(){
+    if (!currentEditingEmpId) return closeModal('modalEmp');
+    if (!confirm('Eliminare il dipendente e tutte le sue presenze?')) return;
+    
+    // AGGIUNGI LOG PRIMA DI ELIMINARE
+    const emp = state.employees.find(e => e.id === currentEditingEmpId);
+    if (emp) {
+        aggiungiLogCronologia(
+            'Elimina dipendente', 
+            `${emp.nome} ${emp.cognome}`
+        );
+    }
+    
+    state.employees = state.employees.filter(e=>e.id !== currentEditingEmpId);
+    // remove presenze associated
+    delete state.presenze[currentEditingEmpId];
+    currentEditingEmpId = null;
+    saveState();
+    closeModal('modalEmp');
+    renderDipendenti();
+    renderHome();
+}
+
+/* =============== PRESENCE =============== */
+function renderPresenze(){
+    const page = document.getElementById('page');
+    // choose employee
+    const empOptions = state.employees.map(e=>`<option value="${e.id}" ${selectedEmpForCalendar===e.id?'selected':''}>${escapeHtml(e.nome)} ${escapeHtml(e.cognome)}</option>`).join('');
+    const today = new Date();
+    page.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3>📅 Presenze - Calendario</h3>
+            <div>
+                <select id="presEmpSel">${empOptions}</select>
+                <button class="btn" onclick="openNewEmployee()">Nuovo dipendente</button>
+            </div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
+            <button class="btn" onclick="changeMonth(-1)">◀ Mese precedente</button>
+            <div class="small" id="currentMonthLabel"></div>
+            <button class="btn" onclick="changeMonth(1)">Mese successivo ▶</button>
+            <div style="margin-left:auto">
+                <button class="btn" onclick="exportPresenze()">Esporta presenze</button>
+            </div>
+        </div>
+        <div id="calendarWrap" style="margin-top:12px"></div>
+    `;
+    // set selection handlers
+    document.getElementById('presEmpSel').addEventListener('change', (e)=>{
+        selectedEmpForCalendar = parseInt(e.target.value);
+        renderCalendar(selectedEmpForCalendar, currentCalendarMonth, currentCalendarYear);
+    });
+    // set default employee if none selected
+    if (!selectedEmpForCalendar && state.employees.length>0) selectedEmpForCalendar = state.employees[0].id;
+    currentCalendarMonth = today.getMonth();
+    currentCalendarYear = today.getFullYear();
+    renderCalendar(selectedEmpForCalendar, currentCalendarMonth, currentCalendarYear);
+}
+
+let currentCalendarMonth = (new Date()).getMonth();
+let currentCalendarYear = (new Date()).getFullYear();
+
+function changeMonth(delta){
+    currentCalendarMonth += delta;
+    if (currentCalendarMonth < 0){ currentCalendarMonth = 11; currentCalendarYear -=1; }
+    if (currentCalendarMonth > 11){ currentCalendarMonth = 0; currentCalendarYear +=1; }
+    renderCalendar(selectedEmpForCalendar, currentCalendarMonth, currentCalendarYear);
+}
+
+function renderCalendar(empId, month, year){
+    const wrap = document.getElementById('calendarWrap');
+    if (!wrap) return;
+    const first = new Date(year, month, 1);
+    const monthLabel = first.toLocaleString('it-IT',{month:'long', year:'numeric'});
+    document.getElementById('currentMonthLabel').textContent = monthLabel;
+
+    // build empty cells for start day
+    const startDay = first.getDay(); // 0=Sun .. 6=Sat (we'll display Mon..Sun)
+    // We'll map so that Monday = index 0. Convert startDay accordingly
+    const monIndex = (startDay + 6) % 7; // 0..6 where 0=Mon
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+
+    // header (Mon..Sun)
+    let html = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px"><div class="small" style="text-align:center">Lun</div><div class="small" style="text-align:center">Mar</div><div class="small" style="text-align:center">Mer</div><div class="small" style="text-align:center">Gio</div><div class="small" style="text-align:center">Ven</div><div class="small" style="text-align:center">Sab</div><div class="small" style="text-align:center">Dom</div></div>`;
+
+    html += '<div class="grid">';
+    // blank cells before month
+    for (let i=0;i<monIndex;i++) html += `<div></div>`;
+    // cells
+    for (let d=1; d<=daysInMonth; d++){
+        const dateStr = formatDateISO(year, month, d);
+        const pres = (state.presenze[empId] && state.presenze[empId][dateStr]) ? state.presenze[empId][dateStr] : null;
+        const status = pres ? pres.status : '';
+        const note = pres ? pres.note : '';
+        let pill = '';
+        if (status) pill = `<div class="status-pill ${status}">${status}</div>`;
+        html += `<div class="cell" onclick="openDayModal('${dateStr}', ${empId})"><div class="daynum">${d}</div>${pill}<div style="margin-top:8px;color:var(--gold);font-size:12px">${escapeHtml(note||'')}</div></div>`;
+    }
+    html += '</div>';
+    wrap.innerHTML = html;
+}
+
+function formatDateISO(y,m,d){
+    const mm = String(m+1).padStart(2,'0');
+    const dd = String(d).padStart(2,'0');
+    return `${y}-${mm}-${dd}`;
+}
+
+function openDayModal(dateStr, empId){
+    if (!empId) return showAlert('Seleziona prima un dipendente','alert');
+    currentModalDate = dateStr;
+    document.getElementById('modalInfo').innerHTML = `<div class="small">Dipendente: <strong>${getEmpNameById(empId)}</strong> — Data: <strong>${formatDate(dateStr)}</strong></div>`;
+    const pres = (state.presenze[empId] && state.presenze[empId][dateStr]) ? state.presenze[empId][dateStr] : {status:'P',note:''};
+    document.getElementById('modalStatus').value = pres.status;
+    document.getElementById('modalNote').value = pres.note || '';
+    document.getElementById('modalDay').classList.add('open');
+    // store selected emp for save
+    document.getElementById('modalDay').dataset.empid = String(empId);
+}
+
+function saveDayFromModal(){
+    const empId = parseInt(document.getElementById('modalDay').dataset.empid);
+    const status = document.getElementById('modalStatus').value;
+    const note = document.getElementById('modalNote').value || '';
+    if (!empId) return showAlert('Errore salvataggio','alert');
+    if (!state.presenze[empId]) state.presenze[empId] = {};
+    state.presenze[empId][currentModalDate] = { status, note };
+    saveState();
+    
+    // AGGIUNGI LOG CRONOLOGIA
+    const empName = getEmpNameById(empId);
+    aggiungiLogCronologia(
+        'Modifica presenza', 
+        `${empName} - ${currentModalDate}: ${status}${note ? ' - ' + note : ''}`
+    );
+    
+    closeModal('modalDay');
+    renderCalendar(empId, currentCalendarMonth, currentCalendarYear);
+}
+
+function saveDay(){ saveDayFromModal(); }
+
+function getEmpNameById(id){
+    const e = state.employees.find(x=>x.id===id);
+    return e ? `${e.nome} ${e.cognome}` : '—';
+}
+
+/* =============== STIPENDI CON CALCOLO NETTO E PDF =============== */
+function renderStipendi(){
+    const page = document.getElementById('page');
+    page.innerHTML = `
+        <div>
+            <h3>💰 Stipendi & Report</h3>
+            <div style="margin-top:8px" class="small">Calcolo stipendi lordi, acconti e saldo netto</div>
+            
+            <div style="display:flex;gap:12px;margin-top:12px">
+                <select id="stipendioMese" onchange="calcolaStipendi()">
+                    <option value="0">Gennaio</option>
+                    <option value="1">Febbraio</option>
+                    <option value="2">Marzo</option>
+                    <option value="3">Aprile</option>
+                    <option value="4">Maggio</option>
+                    <option value="5">Giugno</option>
+                    <option value="6">Luglio</option>
+                    <option value="7">Agosto</option>
+                    <option value="8">Settembre</option>
+                    <option value="9">Ottobre</option>
+                    <option value="10">Novembre</option>
+                    <option value="11">Dicembre</option>
+                </select>
+                <select id="stipendioAnno" onchange="calcolaStipendi()">
+                    ${generateYearOptions()}
+                </select>
+                <button class="btn success" onclick="generaPDFStipendi()">📄 Genera PDF Stipendi</button>
+                <button class="btn" onclick="generaPDFBustePaga()">📋 Buste Paga Individuali</button>
+            </div>
+            
+            <div style="margin-top:12px">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Dipendente</th>
+                            <th>Giorni lavorati</th>
+                            <th>Paga giornaliera</th>
+                            <th>Stipendio Lordo</th>
+                            <th>Acconti</th>
+                            <th>Saldo Netto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportBody"></tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    
+    // Imposta mese e anno corrente
+    const now = new Date();
+    document.getElementById('stipendioMese').value = now.getMonth();
+    document.getElementById('stipendioAnno').value = now.getFullYear();
+    
+    calcolaStipendi();
+}
+
+function generateYearOptions() {
+    const currentYear = new Date().getFullYear();
+    let options = '';
+    for (let year = currentYear - 2; year <= currentYear + 1; year++) {
+        options += `<option value="${year}" ${year === currentYear ? 'selected' : ''}>${year}</option>`;
+    }
+    return options;
+}
+
+function calcolaStipendi() {
+    const mese = parseInt(document.getElementById('stipendioMese').value);
+    const anno = parseInt(document.getElementById('stipendioAnno').value);
+    
+    const tbody = document.getElementById('reportBody');
+    if (!tbody) return;
+    
+    const rows = state.employees.map(emp => {
+        // Calcola giorni lavorati nel mese/anno selezionato
+        const giorniLavorati = countPresenceDaysForEmpInMonth(emp.id, mese, anno);
+        const pagaGiornaliera = parseFloat(emp.paga || 0);
+        const stipendioLordo = giorniLavorati * pagaGiornaliera;
+        
+        // Calcola acconti nel mese/anno selezionato
+        const accontiMese = calcolaAccontiMese(emp.id, mese, anno);
+        const saldoNetto = stipendioLordo - accontiMese;
+        
+        const saldoClass = saldoNetto >= 0 ? 'saldo-positivo' : 'saldo-negativo';
+        
+        return `<tr>
+            <td>${escapeHtml(emp.nome)} ${escapeHtml(emp.cognome)}</td>
+            <td>${giorniLavorati}</td>
+            <td>${pagaGiornaliera}€</td>
+            <td>${stipendioLordo.toFixed(2)}€</td>
+            <td>${accontiMese.toFixed(2)}€</td>
+            <td class="${saldoClass}">${saldoNetto.toFixed(2)}€</td>
+        </tr>`;
+    }).join('');
+    
+    tbody.innerHTML = rows || '<tr><td colspan="6" class="small">Nessun dipendente</td></tr>';
+}
+
+ function countPresenceDaysForEmpInMonth(empId, month, year) {
+    if (!state.presenze[empId]) return 0;
+    
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    let count = 0;
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = formatDateISO(year, month, day);
+        const presenza = state.presenze[empId][dateStr];
+        if (presenza) {
+            if (presenza.status === 'P') {
+                count += 1; // Giornata intera
+            } else if (presenza.status === 'M') {
+                count += 0.5; // Mezza giornata
+            }
+        }
+    }
+    
+    return count;
+}
+
+function calcolaAccontiMese(empId, month, year) {
+    if (!state.acconti || state.acconti.length === 0) return 0;
+    
+    let totale = 0;
+    
+    state.acconti.forEach(acconto => {
+        if (acconto.empId === empId && acconto.meseRiferimento === month && acconto.annoRiferimento === year) {
+            totale += parseFloat(acconto.importo || 0);
+        }
+    });
+    
+    return totale;
+}
+
+function generaPDFStipendi() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    const mese = parseInt(document.getElementById('stipendioMese').value);
+    const anno = parseInt(document.getElementById('stipendioAnno').value);
+    const nomeMese = new Date(anno, mese).toLocaleString('it-IT', { month: 'long' });
+    
+    // Titolo
+    doc.setFontSize(16);
+    doc.text(`REPORT STIPENDI - ${nomeMese.toUpperCase()} ${anno}`, 20, 20);
+    doc.setFontSize(10);
+    doc.text(`2F2000 SRL - Generato il ${new Date().toLocaleDateString('it-IT')}`, 20, 28);
+    
+    // Dati tabella
+    const tableData = state.employees.map(emp => {
+        const giorniLavorati = countPresenceDaysForEmpInMonth(emp.id, mese, anno);
+        const pagaGiornaliera = parseFloat(emp.paga || 0);
+        const stipendioLordo = giorniLavorati * pagaGiornaliera;
+        const accontiMese = calcolaAccontiMese(emp.id, mese, anno);
+        const saldoNetto = stipendioLordo - accontiMese;
+        
+        return [
+            `${emp.nome} ${emp.cognome}`,
+            giorniLavorati.toString(),
+            `${pagaGiornaliera}€`,
+            `${stipendioLordo.toFixed(2)}€`,
+            `${accontiMese.toFixed(2)}€`,
+            `${saldoNetto.toFixed(2)}€`
+        ];
+    });
+    
+    // Creazione tabella
+    doc.autoTable({
+        startY: 35,
+        head: [['Dipendente', 'Giorni', 'Paga/Giorno', 'Lordo', 'Acconti', 'Netto']],
+        body: tableData,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [41, 128, 185] }
+    });
+    
+    // Totale
+    const totaleNetto = state.employees.reduce((sum, emp) => {
+        const giorniLavorati = countPresenceDaysForEmpInMonth(emp.id, mese, anno);
+        const pagaGiornaliera = parseFloat(emp.paga || 0);
+        const stipendioLordo = giorniLavorati * pagaGiornaliera;
+        const accontiMese = calcolaAccontiMese(emp.id, mese, anno);
+        return sum + (stipendioLordo - accontiMese);
+    }, 0);
+    
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(10);
+    doc.text(`TOTALE NETTO: ${totaleNetto.toFixed(2)}€`, 20, finalY);
+    
+    doc.save(`stipendi_${nomeMese}_${anno}.pdf`);
+    
+    // LOG CRONOLOGIA
+    aggiungiLogCronologia('Esportazione PDF stipendi', `Mese: ${nomeMese} ${anno}`);
+    showAlert('PDF stipendi generato con successo!', 'alert');
+}
+
+function generaPDFBustePaga() {
+    const mese = parseInt(document.getElementById('stipendioMese').value);
+    const anno = parseInt(document.getElementById('stipendioAnno').value);
+    const nomeMese = new Date(anno, mese).toLocaleString('it-IT', { month: 'long' });
+    
+    state.employees.forEach(emp => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        const giorniLavorati = countPresenceDaysForEmpInMonth(emp.id, mese, anno);
+        const pagaGiornaliera = parseFloat(emp.paga || 0);
+        const stipendioLordo = giorniLavorati * pagaGiornaliera;
+        const accontiMese = calcolaAccontiMese(emp.id, mese, anno);
+        const saldoNetto = stipendioLordo - accontiMese;
+        
+        // Intestazione
+        doc.setFontSize(16);
+        doc.text('2F2000 SRL', 20, 20);
+        doc.setFontSize(12);
+        doc.text('BUSTA PAGA', 20, 30);
+        
+        // Dati dipendente
+        doc.setFontSize(10);
+        doc.text(`Dipendente: ${emp.nome} ${emp.cognome}`, 20, 45);
+        doc.text(`Qualifica: ${emp.qualifica || '-'}`, 20, 52);
+        doc.text(`Periodo: ${nomeMese} ${anno}`, 20, 59);
+        
+        // Dettaglio stipendio
+        doc.text('DETTAGLIO STIPENDIO:', 20, 72);
+        doc.text(`Giorni lavorati: ${giorniLavorati}`, 30, 79);
+        doc.text(`Paga giornaliera: ${pagaGiornaliera}€`, 30, 86);
+        doc.text(`Stipendio lordo: ${stipendioLordo.toFixed(2)}€`, 30, 93);
+        doc.text(`Acconti: ${accontiMese.toFixed(2)}€`, 30, 100);
+        
+        // Saldo netto
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.text(`SALDO NETTO: ${saldoNetto.toFixed(2)}€`, 20, 115);
+        
+        // Data e firma
+        doc.setFontSize(8);
+        doc.setFont(undefined, 'normal');
+        doc.text(`Generato il ${new Date().toLocaleDateString('it-IT')}`, 20, 130);
+        doc.text('Firma __________________________', 20, 140);
+        
+        doc.save(`busta_paga_${emp.nome}_${emp.cognome}_${nomeMese}_${anno}.pdf`);
+    });
+    
+    // LOG CRONOLOGIA
+    aggiungiLogCronologia('Esportazione buste paga', `Mese: ${nomeMese} ${anno}`);
+    showAlert('Buste paga individuali generate!', 'alert');
+}
+
+/* =============== ACCONTI =============== */
+function renderAcconti(){
+    const page = document.getElementById('page');
+    page.innerHTML = `
+        <div>
+            <h3>💳 Acconti</h3>
+            <div style="margin-top:8px">
+                <button class="btn" onclick="openAccontoModal()">Nuovo acconto</button>
+                <button class="btn secondary" onclick="exportAcconti()" style="margin-left:8px">Esporta acconti</button>
+            </div>
+            <div style="margin-top:12px">
+                <table><thead><tr><th>Data</th><th>Dipendente</th><th>Importo</th><th>Tipo</th><th>Modalità</th><th>Note</th><th>Azioni</th></tr></thead><tbody id="accontiBody"></tbody></table>
+            </div>
+        </div>
+    `;
+    renderAccontiList();
+}
+
+function openAccontoModal(){
+    const empSelect = document.getElementById('ac_emp');
+    if (empSelect) {
+        empSelect.innerHTML = '<option value="">Seleziona dipendente</option>' + 
+            state.employees.map(e => `<option value="${e.id}">${escapeHtml(e.nome)} ${escapeHtml(e.cognome)}</option>`).join('');
+    }
+    document.getElementById('ac_data').value = new Date().toISOString().split('T')[0];
+    document.getElementById('ac_importo').value = '';
+    
+    // IMPOSTA MESE E ANNO CORRENTE
+    const now = new Date();
+    document.getElementById('ac_mese_riferimento').value = now.getMonth();
+    document.getElementById('ac_anno_riferimento').value = now.getFullYear();
+    
+    document.getElementById('ac_tipo').value = 'acconto';
+    document.getElementById('ac_modalita').value = 'Contanti';
+    document.getElementById('ac_note').value = '';
+    document.getElementById('modalAcconto').classList.add('open');
+}
+
+function saveAcconto(){
+ const empId = parseInt(document.getElementById('ac_emp').value);
+    const data = document.getElementById('ac_data').value;
+    const importo = parseFloat(document.getElementById('ac_importo').value) || 0;
+    const meseRiferimento = parseInt(document.getElementById('ac_mese_riferimento').value);
+    const annoRiferimento = parseInt(document.getElementById('ac_anno_riferimento').value);
+    const tipo = document.getElementById('ac_tipo').value || 'acconto';
+    const modalita = document.getElementById('ac_modalita').value || 'Contanti';
+    const note = document.getElementById('ac_note').value || '';
+    
+    if (!empId || !data || !importo) return showAlert('Compila tutti i campi','alert');
+    
+    // Assicurati che state.acconti esista
+    if (!state.acconti) {
+        state.acconti = [];
+    }
+    
+    state.acconti.push({ 
+        id: Date.now(), 
+        empId, 
+        data, 
+        importo, 
+        meseRiferimento,
+        annoRiferimento,
+        tipo,
+        modalita, 
+        note 
+    });
+    saveState();
+    
+    // AGGIUNGI LOG CRONOLOGIA
+    const empName = getEmpNameById(empId);
+    aggiungiLogCronologia(
+        'Nuovo acconto', 
+        `${empName} - ${importo}€ - ${tipo}`
+    );
+    
+    closeModal('modalAcconto');
+    renderAccontiList();
+    renderHome();
+}
+
+function deleteAcconto(id){
+    if (!confirm('Eliminare questo acconto?')) return;
+    
+    // AGGIUNGI LOG PRIMA DELL'ELIMINAZIONE
+    const acconto = state.acconti.find(a => a.id === id);
+    if (acconto) {
+        const empName = getEmpNameById(acconto.empId);
+        aggiungiLogCronologia(
+            'Elimina acconto', 
+            `${empName} - ${acconto.importo}€`
+        );
+    }
+    
+    state.acconti = state.acconti.filter(a => a.id !== id);
+    saveState();
+    renderAccontiList();
+    renderHome();
+}
+
+function renderAccontiList(){
+    const body = document.getElementById('accontiBody');
+    if (!body) return;
+    
+    if (!state.acconti || state.acconti.length === 0) {
+        body.innerHTML = '<tr><td colspan="7" class="small">Nessun acconto registrato</td></tr>';
+        return;
+    }
+    
+    // Ordina per data (più recenti prima)
+    const accontiOrdinati = [...state.acconti].sort((a, b) => new Date(b.data) - new Date(a.data));
+    
+    body.innerHTML = accontiOrdinati.map(a => {
+        const empName = getEmpNameById(a.empId);
+        const tipoLabel = a.tipo === 'scalato' ? 'Acconto Scalato' : 'Acconto Normale';
+        const tipoStyle = a.tipo === 'scalato' ? 'style="color:#ff9800; font-weight:bold"' : '';
+        return `<tr>
+            <td>${formatDate(a.data)}</td>
+            <td>${empName}</td>
+            <td>${a.importo}€</td>
+            <td ${tipoStyle}>${tipoLabel}</td>
+            <td>${escapeHtml(a.modalita)}</td>
+            <td>${escapeHtml(a.note || '')}</td>
+            <td>
+                <button class="btn danger" onclick="deleteAcconto(${a.id})" style="padding:4px 8px; font-size:12px">Elimina</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function exportAcconti(){
+    if (!state.acconti || state.acconti.length === 0) {
+        showAlert('Nessun acconto da esportare', 'alert');
+        return;
+    }
+    
+    const report = state.acconti.map(a => {
+        const empName = getEmpNameById(a.empId);
+        return {
+            data: a.data,
+            dipendente: empName,
+            importo: a.importo,
+            tipo: a.tipo === 'scalato' ? 'Acconto Scalato' : 'Acconto Normale',
+            modalita: a.modalita,
+            note: a.note || ''
+        };
+    });
+    
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `acconti_2f2000_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    
+    // LOG CRONOLOGIA
+    aggiungiLogCronologia('Esportazione acconti', `${state.acconti.length} acconti esportati`);
+    showAlert('Acconti esportati', 'alert');
+}
+
+/* =============== FILES (Buste Paga) =============== */
+function renderFiles(){
+    const page = document.getElementById('page');
+    page.innerHTML = `
+        <div>
+            <h3>📎 Buste Paga</h3>
+            <div class="small" style="margin-top:8px">Puoi associare file a dipendenti (memorizzati come metadata). Se vuoi salvare i file reali, usa il backup server o IndexedDB - qui salviamo solo riferimenti per sicurezza.</div>
+            <div style="margin-top:12px">
+                <table><thead><tr><th>Dipendente</th><th>Nome file</th><th>Data</th></tr></thead><tbody id="filesBody"></tbody></table>
+            </div>
+        </div>
+    `;
+    const body = document.getElementById('filesBody');
+    body.innerHTML = (state.bustePaga || []).map(f=>`<tr><td>${getEmpNameById(f.empId)}</td><td>${escapeHtml(f.name)}</td><td>${formatDate(f.date)}</td></tr>`).join('') || '<tr><td colspan="3" class="small">Nessuna busta</td></tr>';
+}
+
+/* =============== INSTRUCTIONS =============== */
+function renderIstruzioni(){
+    const page = document.getElementById('page');
+    page.innerHTML = `
+        <div>
+            <h3>🚨 Istruzioni Backup</h3>
+            <ol>
+                <li>Clicca su <strong>Backup Sicuro</strong> nel menu laterale.</li>
+                <li>Per esportare: premi <strong>Scarica File Backup</strong> e conserva il file JSON offline o su cloud.</li>
+                <li>Per ripristinare: usa <strong>Carica e Ripristina</strong> e seleziona un file JSON valido.</li>
+                <li>Consiglio: fai backup regolari e conserva almeno 2 copie.</li>
+            </ol>
+        </div>
+    `;
+}
+
+/* =============== BACKUP / EXPORT / IMPORT =============== */
+function exportBackup(){
+    const blob = new Blob([JSON.stringify(state,null,2)], { type:'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `backup_2f2000_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    
+    // LOG CRONOLOGIA
+    aggiungiLogCronologia('Backup esportato', 'Backup completo del sistema');
+    showAlert('Backup scaricato','alert');
+}
+
+function createAutoDownloadBackup(){ 
+    exportBackup(); 
+    showAlert('Backup auto-download creato','alert'); 
+}
+
+function importBackup(){
+    const input = document.getElementById('backupFile');
+    if (!input.files || input.files.length === 0) return showAlert('Seleziona un file JSON','alert');
+    const file = input.files[0];
+    const r = new FileReader();
+    r.onload = (e) => {
+        try {
+            const parsed = JSON.parse(e.target.result);
+            if (!confirm('Import sovrascriverà i dati locali. Continuare?')) return;
+            state = parsed;
+            saveState();
+            
+            // LOG CRONOLOGIA
+            aggiungiLogCronologia('Backup importato', 'Ripristino dati da backup');
+            showAlert('Backup importato, ricarico UI','alert');
+            setTimeout(()=>{ renderHome(); }, 500);
+        } catch(err){
+            showAlert('File non valido','alert');
+        }
+    };
+    r.readAsText(file);
+}
+
+/* =============== EXPORT PRESENZE & REPORTS =============== */
+function exportPresenze(){
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    const now = new Date();
+    doc.setFontSize(16);
+    doc.text('REPORT PRESENZE COMPLETO - 2F2000', 20, 20);
+    doc.setFontSize(10);
+    doc.text(`Generato il ${now.toLocaleDateString('it-IT')}`, 20, 28);
+    
+    let y = 40;
+    
+    state.employees.forEach((emp, empIndex) => {
+        if (y > 270 && empIndex < state.employees.length - 1) {
+            doc.addPage();
+            y = 20;
+        }
+        
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.text(`${emp.nome} ${emp.cognome} - ${emp.qualifica || ''}`, 20, y);
+        doc.setFont(undefined, 'normal');
+        
+        y += 8;
+        
+        // Presenze dell'ultimo mese per esempio
+        const mese = now.getMonth();
+        const anno = now.getFullYear();
+        const giorniLavorati = countPresenceDaysForEmpInMonth(emp.id, mese, anno);
+        
+        doc.setFontSize(10);
+        doc.text(`Giorni lavorati (mese corrente): ${giorniLavorati}`, 20, y);
+        y += 5;
+        
+        // Ultime 10 presenze
+        if (state.presenze[emp.id]) {
+            const presenzeArray = Object.entries(state.presenze[emp.id])
+                .sort((a, b) => new Date(b[0]) - new Date(a[0]))
+                .slice(0, 10);
+            
+            if (presenzeArray.length > 0) {
+                doc.text('Ultime presenze:', 20, y);
+                y += 5;
+                
+                presenzeArray.forEach(([data, pres]) => {
+                    if (y > 270) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                    
+                    const statusMap = { 'P': 'Presente', 'A': 'Assente', 'M': 'Mezza giornata', 'D': 'Domenica' };
+                    doc.text(`  ${new Date(data).toLocaleDateString('it-IT')}: ${statusMap[pres.status] || pres.status} ${pres.note ? '- ' + pres.note : ''}`, 25, y);
+                    y += 4;
+                });
+            }
+        }
+        
+        y += 10;
+    });
+    
+    // Aggiungi opzione di stampa
+    doc.save(`presenze_complete_2f2000_${now.toISOString().split('T')[0]}.pdf`);
+    
+    // Log dell'esportazione
+    aggiungiLogCronologia('Esportazione PDF presenze', 'Report completo presenze');
+    showAlert('PDF presenze generato! Puoi stamparlo dal viewer PDF.', 'alert');
+}
+
+function exportSalaryReport(){
+    // basic report
+    const report = state.employees.map(emp=>{
+        const days = countPresenceDaysForEmp(emp.id);
+        return { emp: `${emp.nome} ${emp.cognome}`, days, paga: emp.paga || 0, totale: (days * (parseFloat(emp.paga||0))).toFixed(2) };
+    });
+    const blob = new Blob([JSON.stringify(report,null,2)],{type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `stipendi_report_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    showAlert('Report esportato','alert');
+}
+
+/* =============== HELPERS =============== */
+function escapeHtml(str){ if (!str) return ''; return String(str).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function formatDate(d){ if(!d) return ''; return new Date(d).toLocaleDateString('it-IT'); }
+function formatDateISOFromStr(dateStr){ return dateStr; }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function countPresenceDaysForEmp(empId){
+    if (!state.presenze[empId]) return 0;
+    return Object.keys(state.presenze[empId]).filter(k=> state.presenze[empId][k].status === 'P').length;
+}
+function countTotalPresenceDays(){
+    return Object.keys(state.presenze).reduce((sum, empId) => sum + (Object.keys(state.presenze[empId]||{}).length || 0), 0);
+}
+
+/* =============== EXPIRY ALERTS =============== */
+const EXPIRY_ALERT_DAYS = 60;
+function getExpiryAlerts(){
+    const now = new Date();
+    const soon = [];
+    state.employees.forEach(emp=>{
+        if (!emp.fine) return;
+        const fd = new Date(emp.fine);
+        const diff = Math.ceil((fd - now) / (1000*60*60*24));
+        if (diff <= EXPIRY_ALERT_DAYS && diff >= -7){
+            soon.push({ nome: `${emp.nome} ${emp.cognome}`, days: diff, data: emp.fine });
+        }
+    });
+    return soon;
+}
+function checkExpiries(){
+    const list = getExpiryAlerts();
+    const alertsDiv = document.getElementById('alerts');
+    alertsDiv.innerHTML = '';
+    if (list.length>0){
+        let html = `<div class="alert">⚠️ <strong>${list.length} contratto${list.length>1?'i':''} in scadenza!</strong><div style="margin-top:6px">`;
+        list.forEach(it => html += `<div class="small">• ${escapeHtml(it.nome)} — ${it.days>0? 'Scade tra '+it.days+' giorni':'SCADUTO'} (${formatDate(it.data)})</div>`);
+        html += '</div></div>';
+        alertsDiv.innerHTML = html;
+    }
+}
+
+/* =============== UTIL COUNT & UI =============== */
+function getStateCopy(){ return JSON.parse(JSON.stringify(state)); }
+
+/* =============== QUICK START: if no employees sample =============== */
+(function ensureSample(){
+    // Inizializza cronologia se non esiste
+    if (!state.cronologia) {
+        state.cronologia = [{
+            id: Date.now(),
+            timestamp: new Date().toISOString(),
+            azione: 'Sistema inizializzato',
+            dettagli: 'Cronologia operazioni attivata',
+            user: 'System'
+        }];
+    }
+    
+    if (!state.employees || state.employees.length === 0){
+        const id1 = Date.now();
+        state.employees.push({ id: id1, nome:'Giovanni', cognome:'Rossi', qualifica:'Capo cantiere', assunzione:'2023-01-01', fine:'', paga:80, notes:'Dipendente esempio' });
+        state.employees.push({ id: id1+1, nome:'Mario', cognome:'Bianchi', qualifica:'Operaio', assunzione:'2023-06-01', fine:'', paga:60, notes:'' });
+        saveState();
+    }
+})();
+
+</script>
+</body>
+</html>
